@@ -1,0 +1,27 @@
+{
+  "name": "ts_gpql_video",
+  "version": "1.0.0",
+  "description": "Create a video hosting application which contains comments with ts and graphql.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prudhvi-Y/ts_gpql_video.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Prudhvi-Y/ts_gpql_video/issues"
+  },
+  "homepage": "https://github.com/Prudhvi-Y/ts_gpql_video#readme",
+  "devDependencies": {
+    "@types/node": "^15.12.0",
+    "tsc-node": "^0.0.3",
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
