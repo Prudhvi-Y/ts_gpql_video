@@ -10,6 +10,17 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model admin {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String
+  password String
+  videos   videos[]
+  admin    Boolean
+  comments  comments[]
+  viewcomments  Boolean
+}
+
 model user {
   id       Int      @id @default(autoincrement())
   email    String   @unique
@@ -26,8 +37,10 @@ model videos {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   content   String
-  author    user?    @relation(fields: [authorId], references: [id])
+  author    admin?    @relation(fields: [authorId], references: [id])
   authorId  Int?
+  viewer    user?    @relation(fields: [viewerId], references: [id])
+  viewerId  Int?
 }
 
 model comments {
@@ -35,6 +48,8 @@ model comments {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   content String
-  author  user? @relation(fields: [authorId], references: [id])
+  author  admin? @relation(fields: [authorId], references: [id])
   authorId Int?
+  viewer  user? @relation(fields: [viewerId], references: [id])
+  viewerId Int?
 }
