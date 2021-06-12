@@ -1,15 +1,18 @@
 import { Field, ID, ObjectType } from "type-graphql";
 
 @ObjectType()
-export class User {
+export class comments {
   @Field(() => ID)
   id: number;
 
   @Field()
-  email: string;
+  createdAt: Date;
 
   @Field()
-  name: string;
+  updatedAt: Date;
 
-  password: string;
+  @Field()
+  content: string;
+
+  authorId: number;
 }

@@ -15,10 +15,8 @@ model admin {
   email    String   @unique
   name     String
   password String
-  videos   videos[]
   admin    Boolean
-  comments  comments[]
-  viewcomments  Boolean
+  videos   videos[]
 }
 
 model user {
@@ -26,10 +24,7 @@ model user {
   email    String   @unique
   name     String
   password String
-  videos   videos[]
-  admin    Boolean
-  comments  comments[]
-  viewcomments  Boolean
+  comments comments[]
 }
 
 model videos {
@@ -38,9 +33,8 @@ model videos {
   updatedAt DateTime @updatedAt
   content   String
   author    admin?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
-  viewer    user?    @relation(fields: [viewerId], references: [id])
-  viewerId  Int?
+  authorId  Int
+  viewers   Int[]
 }
 
 model comments {
@@ -48,8 +42,6 @@ model comments {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   content String
-  author  admin? @relation(fields: [authorId], references: [id])
-  authorId Int?
-  viewer  user? @relation(fields: [viewerId], references: [id])
-  viewerId Int?
+  author  user? @relation(fields: [authorId], references: [id])
+  authorId Int
 }

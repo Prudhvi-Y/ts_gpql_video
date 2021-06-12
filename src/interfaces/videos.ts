@@ -16,5 +16,5 @@ export class Video {
 
   authorId: number;
 
-  viewerId: number;
+  viewers:  number[];
 }

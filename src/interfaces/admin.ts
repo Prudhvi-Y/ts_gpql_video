@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from "type-graphql";
 
 @ObjectType()
-export class User {
+export class admin {
   @Field(() => ID)
   id: number;
 
@@ -12,4 +12,6 @@ export class User {
   name: string;
 
   password: string;
+
+  admin: boolean;
 }
