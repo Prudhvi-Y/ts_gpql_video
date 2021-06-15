@@ -1,6 +1,7 @@
 import { User } from "../interfaces/users";
 import { Field, ObjectType } from "type-graphql";
 import { admin } from "../interfaces/admin";
+import { validUser } from "../interfaces/validUser";
 
 @ObjectType()
 export class FieldError {
@@ -31,6 +32,16 @@ export class AdminResponse {
 
     @Field(() => String, {nullable: true})
     token: string | null;
+
+    @Field(() => [FieldError], {nullable: true})
+    errors: FieldError[] | null;
+    
+}
+
+@ObjectType()
+export class ValidUserResponse {
+    @Field(() => [validUser], {nullable: true})
+    users?: validUser[] | null;
 
     @Field(() => [FieldError], {nullable: true})
     errors: FieldError[] | null;

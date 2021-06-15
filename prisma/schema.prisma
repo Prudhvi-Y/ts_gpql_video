@@ -20,8 +20,8 @@ model admin {
 }
 
 model user {
-  id       Int      @id @default(autoincrement())
-  email    String   @unique
+  id       Int        @id @default(autoincrement())
+  email    String     @unique
   name     String
   password String
   comments comments[]
@@ -32,16 +32,20 @@ model videos {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   content   String
-  author    admin?    @relation(fields: [authorId], references: [id])
+  author    admin?   @relation(fields: [authorId], references: [id])
   authorId  Int
-  viewers   Int[]
 }
 
 model comments {
-  id  Int   @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  content String
-  author  user? @relation(fields: [authorId], references: [id])
-  authorId Int
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  author    user?    @relation(fields: [authorId], references: [id])
+  authorId  Int
+}
+
+model validusers {
+  id    Int    @id @default(autoincrement())
+  email String @unique
 }

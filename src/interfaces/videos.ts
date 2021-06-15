@@ -15,6 +15,4 @@ export class Video {
   content: string;
 
   authorId: number;
-
-  viewers:  number[];
 }

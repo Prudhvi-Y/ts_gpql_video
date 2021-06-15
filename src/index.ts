@@ -8,7 +8,9 @@ import http from "http";
 import * as dotenv from "dotenv";
 import { MyContext } from "./types";
 import { HelloResolver } from "./resolvers/hello";
-import { UserResolver } from "./resolvers/userLogin";
+import { UserResolver } from "./resolvers/userResolver";
+import { VideoResolver } from "./resolvers/videosResolver";
+import { AdminResolver } from "./resolvers/adminResolver";
 
 dotenv.config({ path: __dirname + "../.env" });
 
@@ -19,7 +21,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, UserResolver],
+      resolvers: [HelloResolver, UserResolver, VideoResolver, AdminResolver],
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ prisma, req, res }),
