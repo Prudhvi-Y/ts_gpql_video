@@ -11,6 +11,7 @@ import { HelloResolver } from "./resolvers/hello";
 import { UserResolver } from "./resolvers/userResolver";
 import { VideoResolver } from "./resolvers/videosResolver";
 import { AdminResolver } from "./resolvers/adminResolver";
+import { CommentResolver } from "./resolvers/commentsResolver";
 
 dotenv.config({ path: __dirname + "../.env" });
 
@@ -21,7 +22,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, UserResolver, VideoResolver, AdminResolver],
+      resolvers: [HelloResolver, UserResolver, VideoResolver, AdminResolver, CommentResolver],
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ prisma, req, res }),

@@ -11,8 +11,8 @@ import { UsernamePasswordInput } from "./userResolver";
 import { admin } from "../interfaces/admin";
 import { VideoResponse } from "../responses/videos";
 import { getUser } from "../helpers/jwtUtil";
-import { addVideos } from "../helpers/videoqueries";
-import { addValidUser } from "../helpers/userqueries";
+import { addVideos, removeVideos } from "../helpers/videoqueries";
+import { addValidUser, removeValidUser } from "../helpers/userqueries";
 
 @Resolver()
 export class AdminResolver {
@@ -184,6 +184,46 @@ export class AdminResolver {
     }
   }
 
+  @Mutation(() => VideoResponse)
+  async adminRemoveVideos(
+    @Arg("vid") vid: number,
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<VideoResponse | null> {
+    const fielderr: FieldError = {
+      field: "",
+      message: "",
+    };
+    let resp: VideoResponse = {
+      videos: null,
+      token: null,
+      errors: null,
+    };
+
+    const admin = getUser(req);
+
+    if (admin) {
+      const videos = await removeVideos(vid, admin.id, prisma);
+
+      if (videos) {
+        return videos;
+      } else {
+        fielderr.field = "videos";
+        fielderr.message = "not able to add videos";
+
+        resp.errors = [fielderr];
+
+        return resp;
+      }
+    } else {
+      fielderr.field = "admin";
+      fielderr.message = "token invalid login again";
+
+      resp.errors = [fielderr];
+
+      return resp;
+    }
+  }
+
   @Mutation(() => ValidUserResponse)
   async adminAddValidUser(
     @Arg("email") email: string,
@@ -207,11 +247,42 @@ export class AdminResolver {
         resp.users = [validuser];
         return resp;
       } else {
-        fielderr.field = "validuser";
-        fielderr.message = "not able to add valid user";
+        
+        return resp;
+      }
+    } else {
+      fielderr.field = "admin";
+      fielderr.message = "token invalid login again";
 
-        resp.errors = [fielderr];
+      resp.errors = [fielderr];
 
+      return resp;
+    }
+  }
+
+  @Mutation(() => ValidUserResponse)
+  async adminRemoveValidUser(
+    @Arg("email") email: string,
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<ValidUserResponse | null> {
+    const fielderr: FieldError = {
+      field: "",
+      message: "",
+    };
+    let resp: ValidUserResponse = {
+      users: null,
+      errors: null,
+    };
+
+    const admin = getUser(req);
+
+    if (admin) {
+      const validuser = await removeValidUser(email, prisma);
+
+      if (validuser) {
+        resp.users = [validuser];
+        return resp;
+      } else {
         return resp;
       }
     } else {

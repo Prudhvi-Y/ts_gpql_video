@@ -138,3 +138,43 @@ export async function addVideos(
       return resp;
   }
 }
+
+
+  export async function removeVideos(
+    vid: number,
+    adminid: number,
+    prisma: PrismaClient<
+      Prisma.PrismaClientOptions,
+      never,
+      Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+    >
+  ): Promise<VideoResponse> {
+    let resp: VideoResponse = {
+      videos: null,
+      token: null,
+      errors: null,
+    };
+  
+    const videos = await prisma.admin.update({
+        where: {
+            id: adminid
+        },
+        data: {
+            videos: {
+                delete: {
+                    id: vid
+                },
+            },
+        },
+  
+        select: {
+            videos: {
+                take: -1,
+            },
+        },
+    });
+  
+    resp.videos = videos.videos
+
+    return resp;
+}

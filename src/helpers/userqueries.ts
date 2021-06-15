@@ -20,3 +20,23 @@ export async function addValidUser(
   }
   return validuser;
 }
+
+export async function removeValidUser(
+    useremail: string,
+    prisma: PrismaClient<
+      Prisma.PrismaClientOptions,
+      never,
+      Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+    >
+  ): Promise<validUser | null> {
+    const validuser = await prisma.validusers.delete({
+      where: {
+        email: useremail,
+      },
+    });
+  
+    if (!validuser) {
+      return null;
+    }
+    return validuser;
+  }

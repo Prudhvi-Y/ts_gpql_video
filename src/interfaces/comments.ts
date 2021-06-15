@@ -14,5 +14,8 @@ export class comments {
   @Field()
   content: string;
 
-  authorId: number;
+  @Field()
+  authorName: string;
+
+  videoId: number;
 }
