@@ -1,9 +1,12 @@
-import { Arg, Ctx, Field, InputType, Mutation, Resolver } from "type-graphql";
+import { Arg, Ctx, Field, InputType, Mutation, PubSub, PubSubEngine, Resolver, Root, Subscription } from "type-graphql";
 import { CommentResponse } from "../responses/comments";
 import { FieldError } from "../responses/users";
 import { MyContext } from "../types";
 import { getUser } from "../helpers/jwtUtil";
 import { addComment, getComments } from "../helpers/commentsqueries";
+import { comments } from "../interfaces/comments";
+
+export const COMMENT_CHANNEL = 'COMMENT_CHANNEL';
 
 @InputType()
 class commentInput {
@@ -19,7 +22,8 @@ export class CommentResolver {
   @Mutation(() => CommentResponse)
   async userAddComment(
     @Arg("commentInput") commentinput: commentInput,
-    @Ctx() { req, prisma }: MyContext
+    @Ctx() { req, prisma }: MyContext,
+    @PubSub() pubsub: PubSubEngine,
   ): Promise<CommentResponse | null> {
     const user = getUser(req);
     let resp: CommentResponse = {
@@ -39,11 +43,138 @@ export class CommentResolver {
         user.id,
         commentinput.vid,
         user.email,
-        prisma
+        prisma,
+        pubsub,
       );
 
       resp.comments = comment.comments;
       resp.errors = comment.errors;
+    } else {
+      err.field = "user";
+      err.message = "invalid user";
+
+      resp.errors = [err];
+    }
+
+    return resp;
+  }
+
+  @Mutation(() => CommentResponse)
+  async userDeleteComment(
+    @Arg("commentId") commentid: number,
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<CommentResponse | null> {
+    const user = getUser(req);
+    let resp: CommentResponse = {
+      comments: null,
+      token: null,
+      errors: null,
+    };
+
+    let err: FieldError = {
+      field: "",
+      message: "",
+    };
+
+    if (user) {
+
+      const comment = await prisma.comments.findFirst({
+        where: {
+          id: commentid
+        },
+      })
+
+      if(comment?.authorName == user.name){
+        await prisma.user.update({
+          where: {
+            id:user.id
+          },
+          data: {
+            comments: {
+              delete: {
+                id: commentid
+              }
+            }
+          }
+        });
+
+        resp.comments = null;
+      } else {
+        err.field = "comment";
+        err.message = "this comment doesn't belong to the current user";
+
+        resp.errors = [err]
+      }
+
+    } else {
+      err.field = "user";
+      err.message = "invalid user";
+
+      resp.errors = [err];
+    }
+
+    return resp;
+  }
+
+  async userUpdateComment(
+    @Arg("commentId") commentid: number,
+    @Arg("content") content: string,
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<CommentResponse | null> {
+    const user = getUser(req);
+    let resp: CommentResponse = {
+      comments: null,
+      token: null,
+      errors: null,
+    };
+
+    let err: FieldError = {
+      field: "",
+      message: "",
+    };
+
+    if (user) {
+      const comment = await prisma.comments.findFirst({
+        where: {
+          id: commentid
+        },
+      })
+
+      if(comment?.authorName == user.name){
+        const comment = await prisma.user.update({
+          where: {
+            id:user.id
+          },
+          data: {
+            comments: {
+              update: {
+                where: {
+                  id: commentid
+                },
+                data: {
+                  content: content
+                },
+              }
+            }
+          },
+
+          select: {
+            comments: {
+              where: {
+                id: commentid
+              },
+            }
+          }
+        });
+
+        resp.comments = comment.comments;
+      } else {
+        err.field = "comment";
+        err.message = "this comment doesn't belong to the current user";
+
+        resp.errors = [err]
+      }
+
     } else {
       err.field = "user";
       err.message = "invalid user";
@@ -85,6 +216,28 @@ export class CommentResolver {
       err.message = "invalid user";
 
       resp.errors = [err];
+    }
+
+    return resp;
+  }
+
+  @Subscription(() => CommentResponse, {
+    topics: COMMENT_CHANNEL,
+  })
+  async getVideoLiveComments(
+    @Root() payload: comments,
+    @Arg("videoId") vid: number,
+  ): Promise<CommentResponse | null> {
+
+    let resp:CommentResponse = {
+      comments: null,
+      token: null,
+      errors: null
+    }
+    if(payload.videoId == vid){
+      
+      resp.comments = [payload];
+      return resp;
     }
 
     return resp;

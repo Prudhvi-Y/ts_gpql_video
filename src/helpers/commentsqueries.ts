@@ -1,4 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { PubSubEngine } from "apollo-server-express";
+import { COMMENT_CHANNEL } from "../resolvers/commentsResolver";
 import { CommentResponse } from "../responses/comments";
 import { FieldError } from "../responses/users";
 
@@ -11,7 +13,8 @@ export async function addComment(
     Prisma.PrismaClientOptions,
     never,
     Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
-  >
+  >,
+  pubsub: PubSubEngine,
 ): Promise<CommentResponse> {
   let resp: CommentResponse = {
     comments: null,
@@ -49,6 +52,8 @@ export async function addComment(
 
     if (comment) {
       resp.comments = [comment];
+
+      pubsub.publish(COMMENT_CHANNEL, comment)
 
       return resp;
     } else {

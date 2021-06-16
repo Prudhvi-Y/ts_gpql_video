@@ -6,12 +6,13 @@ import { buildSchema } from "type-graphql";
 import { PrismaClient } from "@prisma/client";
 import http from "http";
 import * as dotenv from "dotenv";
-import { MyContext } from "./types";
+import { MyContext, subsAuth } from "./types";
 import { HelloResolver } from "./resolvers/hello";
 import { UserResolver } from "./resolvers/userResolver";
 import { VideoResolver } from "./resolvers/videosResolver";
 import { AdminResolver } from "./resolvers/adminResolver";
 import { CommentResolver } from "./resolvers/commentsResolver";
+import { getTokenPayload } from "./helpers/jwtUtil";
 
 dotenv.config({ path: __dirname + "../.env" });
 
@@ -22,28 +23,33 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, UserResolver, VideoResolver, AdminResolver, CommentResolver],
+      resolvers: [
+        HelloResolver,
+        UserResolver,
+        VideoResolver,
+        AdminResolver,
+        CommentResolver,
+      ],
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ prisma, req, res }),
     subscriptions: {
       path: "/subscriptions",
-      onConnect: (_connectionParams, _websocket) => {
+      onConnect: (connectionParams, _websocket) => {
         console.log("connected to websocket");
-        // if (connectionParams.hasOwnProperty('Authorization')){
-        //     // console.log(connectionParams as string);
-        //     const parsed: subsAuth = connectionParams as subsAuth;
-        //     // console.log(parsed.Authorization);
-        //     const token = parsed.Authorization.replace('Bearer ','');
-        //     const userId = getTokenPayload(token);
-        //     if (!userId) {
-        //         return false;
-        //     } else {
-        //         return true;
-        //     }
-        // } else {
-        //     return false;
-        // }
+        if (connectionParams.hasOwnProperty("Authorization")) {
+          const parsed: subsAuth = connectionParams as subsAuth;
+
+          const token = parsed.Authorization.replace("Bearer ", "");
+          const user = getTokenPayload(token);
+          if (!user) {
+            return false;
+          } else {
+            return true;
+          }
+        } else {
+          return false;
+        }
       },
       onDisconnect: () => console.log("disconnected from websocket"),
     },
