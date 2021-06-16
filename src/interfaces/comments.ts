@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from "type-graphql";
+import { Field, ID, Int, ObjectType } from "type-graphql";
 
 @ObjectType()
 export class comments {
@@ -17,5 +17,9 @@ export class comments {
   @Field()
   authorName: string;
 
+  @Field()
   videoId: number;
+
+  @Field(() => Int, { nullable: true })
+  preCommentId: number | null;
 }

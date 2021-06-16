@@ -1,12 +1,27 @@
-import { Arg, Ctx, Field, InputType, Mutation, PubSub, PubSubEngine, Resolver, Root, Subscription } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Field,
+  InputType,
+  Mutation,
+  PubSub,
+  PubSubEngine,
+  Resolver,
+  Root,
+  Subscription,
+} from "type-graphql";
 import { CommentResponse } from "../responses/comments";
 import { FieldError } from "../responses/users";
 import { MyContext } from "../types";
 import { getUser } from "../helpers/jwtUtil";
-import { addComment, getComments } from "../helpers/commentsqueries";
+import {
+  addComment,
+  getCommentComments,
+  getVideoComments,
+} from "../helpers/commentsqueries";
 import { comments } from "../interfaces/comments";
 
-export const COMMENT_CHANNEL = 'COMMENT_CHANNEL';
+export const COMMENT_CHANNEL = "COMMENT_CHANNEL";
 
 @InputType()
 class commentInput {
@@ -15,6 +30,9 @@ class commentInput {
 
   @Field()
   vid: number;
+
+  @Field()
+  replyto: number;
 }
 
 @Resolver()
@@ -23,7 +41,7 @@ export class CommentResolver {
   async userAddComment(
     @Arg("commentInput") commentinput: commentInput,
     @Ctx() { req, prisma }: MyContext,
-    @PubSub() pubsub: PubSubEngine,
+    @PubSub() pubsub: PubSubEngine
   ): Promise<CommentResponse | null> {
     const user = getUser(req);
     let resp: CommentResponse = {
@@ -42,9 +60,10 @@ export class CommentResolver {
         commentinput.content,
         user.id,
         commentinput.vid,
+        commentinput.replyto,
         user.email,
         prisma,
-        pubsub,
+        pubsub
       );
 
       resp.comments = comment.comments;
@@ -77,25 +96,34 @@ export class CommentResolver {
     };
 
     if (user) {
-
       const comment = await prisma.comments.findFirst({
         where: {
-          id: commentid
+          id: commentid,
         },
-      })
+      });
 
-      if(comment?.authorName == user.name){
+      if (comment?.authorName == user.name) {
+        await prisma.comments.update({
+          where: {
+            id: commentid,
+          },
+          data: {
+            succComments: {
+              set: [],
+            },
+          },
+        });
         await prisma.user.update({
           where: {
-            id:user.id
+            id: user.id,
           },
           data: {
             comments: {
               delete: {
-                id: commentid
-              }
-            }
-          }
+                id: commentid,
+              },
+            },
+          },
         });
 
         resp.comments = null;
@@ -103,9 +131,8 @@ export class CommentResolver {
         err.field = "comment";
         err.message = "this comment doesn't belong to the current user";
 
-        resp.errors = [err]
+        resp.errors = [err];
       }
-
     } else {
       err.field = "user";
       err.message = "invalid user";
@@ -136,35 +163,35 @@ export class CommentResolver {
     if (user) {
       const comment = await prisma.comments.findFirst({
         where: {
-          id: commentid
+          id: commentid,
         },
-      })
+      });
 
-      if(comment?.authorName == user.name){
+      if (comment?.authorName == user.name) {
         const comment = await prisma.user.update({
           where: {
-            id:user.id
+            id: user.id,
           },
           data: {
             comments: {
               update: {
                 where: {
-                  id: commentid
+                  id: commentid,
                 },
                 data: {
-                  content: content
+                  content: content,
                 },
-              }
-            }
+              },
+            },
           },
 
           select: {
             comments: {
               where: {
-                id: commentid
+                id: commentid,
               },
-            }
-          }
+            },
+          },
         });
 
         resp.comments = comment.comments;
@@ -172,9 +199,8 @@ export class CommentResolver {
         err.field = "comment";
         err.message = "this comment doesn't belong to the current user";
 
-        resp.errors = [err]
+        resp.errors = [err];
       }
-
     } else {
       err.field = "user";
       err.message = "invalid user";
@@ -203,11 +229,39 @@ export class CommentResolver {
     };
 
     if (user) {
-      const comment = await getComments(
-        vid,
-        user.email,
-        prisma
-      );
+      const comment = await getVideoComments(vid, user.email, prisma);
+
+      resp.comments = comment.comments;
+      resp.errors = comment.errors;
+    } else {
+      err.field = "user";
+      err.message = "invalid user";
+
+      resp.errors = [err];
+    }
+
+    return resp;
+  }
+
+  @Mutation(() => CommentResponse)
+  async commentComments(
+    @Arg("commentId") cid: number,
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<CommentResponse | null> {
+    const user = getUser(req);
+    let resp: CommentResponse = {
+      comments: null,
+      token: null,
+      errors: null,
+    };
+
+    let err: FieldError = {
+      field: "",
+      message: "",
+    };
+
+    if (user) {
+      const comment = await getCommentComments(cid, user.email, prisma);
 
       resp.comments = comment.comments;
       resp.errors = comment.errors;
@@ -226,16 +280,35 @@ export class CommentResolver {
   })
   async getVideoLiveComments(
     @Root() payload: comments,
-    @Arg("videoId") vid: number,
+    @Arg("videoId") vid: number
   ): Promise<CommentResponse | null> {
-
-    let resp:CommentResponse = {
+    let resp: CommentResponse = {
       comments: null,
       token: null,
-      errors: null
+      errors: null,
+    };
+    if (payload.videoId == vid) {
+      resp.comments = [payload];
+      return resp;
     }
-    if(payload.videoId == vid){
-      
+
+    return resp;
+  }
+
+  @Subscription(() => CommentResponse, {
+    topics: COMMENT_CHANNEL,
+  })
+  async getCommentLiveComments(
+    @Root() payload: comments,
+    @Arg("commentID") cid: number
+  ): Promise<CommentResponse | null> {
+    let resp: CommentResponse = {
+      comments: null,
+      token: null,
+      errors: null,
+    };
+
+    if (payload.preCommentId == cid) {
       resp.comments = [payload];
       return resp;
     }

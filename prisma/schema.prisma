@@ -38,14 +38,17 @@ model videos {
 }
 
 model comments {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  content    String
-  author     user?    @relation(fields: [authorName], references: [name])
-  authorName String
-  video      videos?  @relation(fields: [videoId], references: [id])
-  videoId    Int
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  content      String
+  author       user?      @relation(fields: [authorName], references: [name])
+  authorName   String
+  video        videos?    @relation(fields: [videoId], references: [id])
+  videoId      Int
+  preCommentId Int?       
+  preComments  comments?  @relation("CommentsSelf", fields: [preCommentId], references: [id])
+  succComments comments[] @relation("CommentsSelf")
 }
 
 model validusers {
