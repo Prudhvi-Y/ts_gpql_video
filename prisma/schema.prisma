@@ -17,6 +17,7 @@ model admin {
   password String
   admin    Boolean
   videos   videos[]
+  role     String
 }
 
 model user {
@@ -25,6 +26,7 @@ model user {
   name     String     @unique
   password String
   comments comments[]
+  role     String
 }
 
 model videos {
@@ -46,7 +48,7 @@ model comments {
   authorName   String
   video        videos?    @relation(fields: [videoId], references: [id])
   videoId      Int
-  preCommentId Int?       
+  preCommentId Int?
   preComments  comments?  @relation("CommentsSelf", fields: [preCommentId], references: [id])
   succComments comments[] @relation("CommentsSelf")
 }
@@ -54,4 +56,26 @@ model comments {
 model validusers {
   id    Int    @id @default(autoincrement())
   email String @unique
+}
+
+model roles {
+  id             Int     @id @default(autoincrement())
+  commentsadd    Boolean
+  commentsview   Boolean
+  commentsedit   Boolean
+  commentsdelete Boolean
+  videosadd      Boolean
+  videosview     Boolean
+  videosedit     Boolean
+  videosdelete   Boolean
+  usersadd       Boolean
+  usersview      Boolean
+  usersedit      Boolean
+  usersdelete    Boolean
+  isadmin        Boolean
+  adminsadd      Boolean
+  adminsview     Boolean
+  adminsedit     Boolean
+  adminsdelete   Boolean
+  rolename       String  @unique
 }

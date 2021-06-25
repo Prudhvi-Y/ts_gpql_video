@@ -14,4 +14,7 @@ export class admin {
   password: string;
 
   admin: boolean;
+
+  @Field()
+  role: string;
 }
