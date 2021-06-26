@@ -15,7 +15,6 @@ model admin {
   email    String   @unique
   name     String   @unique
   password String
-  admin    Boolean
   videos   videos[]
   role     String
 }
@@ -26,7 +25,6 @@ model user {
   name     String     @unique
   password String
   comments comments[]
-  role     String
 }
 
 model videos {
@@ -64,6 +62,10 @@ model roles {
   commentsview   Boolean
   commentsedit   Boolean
   commentsdelete Boolean
+  rolesadd       Boolean
+  rolesview      Boolean
+  rolesedit      Boolean
+  rolesdelete    Boolean
   videosadd      Boolean
   videosview     Boolean
   videosedit     Boolean

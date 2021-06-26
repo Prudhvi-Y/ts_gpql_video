@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { PubSubEngine } from "apollo-server-express";
 import { comments } from "../interfaces/comments";
+import { User } from "../interfaces/users";
 import { COMMENT_CHANNEL } from "../resolvers/commentsResolver";
 import { CommentResponse } from "../responses/comments";
 import { FieldError } from "../responses/users";
@@ -165,6 +166,60 @@ export async function getVideoComments(
 
     return resp;
   }
+}
+
+export async function deleteComments(
+  user: User,
+  commentid: number,
+  prisma: PrismaClient<
+    Prisma.PrismaClientOptions,
+    never,
+    Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+  >
+):Promise<FieldError | null> {
+
+  let err: FieldError = {
+    field: "",
+    message: "",
+  };
+
+  const comment = await prisma.comments.findFirst({
+    where: {
+      id: commentid,
+    },
+  });
+
+  if (comment?.authorName == user.name) {
+    await prisma.comments.update({
+      where: {
+        id: commentid,
+      },
+      data: {
+        succComments: {
+          set: [],
+        },
+      },
+    });
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        comments: {
+          delete: {
+            id: commentid,
+          },
+        },
+      },
+    });
+
+  } else {
+    err.field = "comment";
+    err.message = "this comment doesn't belong to the current user";
+  }
+
+  return err;
+  
 }
 
 export async function getCommentComments(

@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import * as brcypt from "bcrypt";
 const prisma = new PrismaClient()
 
 export async function main() {
@@ -24,6 +25,10 @@ export async function main() {
             usersdelete: true,
             usersedit: true,
             usersview: true,
+            rolesadd: true,
+            rolesdelete: true,
+            rolesedit: true,
+            rolesview: true,
             isadmin: true,
             rolename: process.env.SUPERADMIN_ROLE as string,
         },
@@ -35,10 +40,9 @@ export async function main() {
         },
         update: {},
         create: {
-            admin: true,
             email: process.env.SUPERADMIN_EMAIL as string,
             name: process.env.SUPERADMIN_NAME as string,
-            password: process.env.SUPERADMIN_PASSWORD as string,
+            password: await brcypt.hash(process.env.SUPERADMIN_PASSWORD as string, 10),
             role: process.env.SUPERADMIN_ROLE as string,
         }
     });

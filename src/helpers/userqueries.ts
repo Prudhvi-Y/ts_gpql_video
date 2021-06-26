@@ -40,3 +40,33 @@ export async function removeValidUser(
     }
     return validuser;
   }
+
+export async function viewValidUser(
+    useremail: string,
+    prisma: PrismaClient<
+      Prisma.PrismaClientOptions,
+      never,
+      Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+    >
+  ): Promise<validUser[] | null> {
+
+    if (useremail != "") {
+      const validuser = await prisma.validusers.findUnique({
+        where: {
+          email: useremail,
+        },
+      });
+    
+      if (!validuser) {
+        return null;
+      }
+      return [validuser];
+  } else {
+    const validuser = await prisma.validusers.findMany();
+  
+    if (!validuser) {
+      return null;
+    }
+    return validuser;
+  }
+}

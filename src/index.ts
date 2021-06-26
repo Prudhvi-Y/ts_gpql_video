@@ -13,6 +13,7 @@ import { VideoResolver } from "./resolvers/videosResolver";
 import { AdminResolver } from "./resolvers/adminResolver";
 import { CommentResolver } from "./resolvers/commentsResolver";
 import { getTokenPayload } from "./helpers/jwtUtil";
+import { RoleResolver } from "./resolvers/roleResolver";
 
 dotenv.config({ path: __dirname + "../.env" });
 
@@ -29,6 +30,7 @@ const main = async () => {
         VideoResolver,
         AdminResolver,
         CommentResolver,
+        RoleResolver,
       ],
       validate: false,
     }),

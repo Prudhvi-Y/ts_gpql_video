@@ -16,6 +16,7 @@ import { MyContext } from "../types";
 import { getUser } from "../helpers/jwtUtil";
 import {
   addComment,
+  deleteComments,
   getCommentComments,
   getVideoComments,
 } from "../helpers/commentsqueries";
@@ -96,43 +97,42 @@ export class CommentResolver {
     };
 
     if (user) {
-      const comment = await prisma.comments.findFirst({
+      const errs = await deleteComments(user, commentid, prisma);
+      if (errs) {
+        resp.errors = [errs];
+      }
+    } else {
+      err.field = "user";
+      err.message = "invalid user";
+
+      resp.errors = [err];
+    }
+
+    return resp;
+  }
+
+  @Mutation(() => CommentResponse)
+  async userDeleteAllComments(
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<CommentResponse | null> {
+    const user = getUser(req);
+    let resp: CommentResponse = {
+      comments: null,
+      token: null,
+      errors: null,
+    };
+
+    let err: FieldError = {
+      field: "",
+      message: "",
+    };
+
+    if (user) {
+      await prisma.comments.deleteMany({
         where: {
-          id: commentid,
+          authorName: user.name,
         },
       });
-
-      if (comment?.authorName == user.name) {
-        await prisma.comments.update({
-          where: {
-            id: commentid,
-          },
-          data: {
-            succComments: {
-              set: [],
-            },
-          },
-        });
-        await prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            comments: {
-              delete: {
-                id: commentid,
-              },
-            },
-          },
-        });
-
-        resp.comments = null;
-      } else {
-        err.field = "comment";
-        err.message = "this comment doesn't belong to the current user";
-
-        resp.errors = [err];
-      }
     } else {
       err.field = "user";
       err.message = "invalid user";

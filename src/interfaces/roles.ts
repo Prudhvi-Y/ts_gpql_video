@@ -1,60 +1,72 @@
 import { Field, ID, ObjectType } from "type-graphql";
 
 @ObjectType()
-export class Video {
+export class Role {
   @Field(() => ID)
   id: number;
 
   @Field()
-  commentsadd: Boolean;
+  commentsadd: boolean;
 
   @Field()
-  commentsview: Boolean;
+  commentsview: boolean;
 
   @Field()
-  commentsedit: Boolean;
+  commentsedit: boolean;
 
   @Field()
-  commentsdelete: Boolean;
+  commentsdelete: boolean;
 
   @Field()
-  videosadd: Boolean;
+  rolesadd: boolean;
 
   @Field()
-  videosview: Boolean;
+  rolesview: boolean;
 
   @Field()
-  videosedit: Boolean;
+  rolesedit: boolean;
 
   @Field()
-  videosdelete: Boolean;
+  rolesdelete: boolean;
 
   @Field()
-  usersadd: Boolean;
+  videosadd: boolean;
 
   @Field()
-  usersview: Boolean;
+  videosview: boolean;
 
   @Field()
-  usersedit: Boolean;
+  videosedit: boolean;
 
   @Field()
-  usersdelete: Boolean;
+  videosdelete: boolean;
 
   @Field()
-  isadmin: Boolean;
+  usersadd: boolean;
 
   @Field()
-  adminsadd: Boolean;
+  usersview: boolean;
 
   @Field()
-  adminsview: Boolean;
+  usersedit: boolean;
 
   @Field()
-  adminsedit: Boolean;
+  usersdelete: boolean;
 
   @Field()
-  adminsdelete: Boolean;
+  isadmin: boolean;
+
+  @Field()
+  adminsadd: boolean;
+
+  @Field()
+  adminsview: boolean;
+
+  @Field()
+  adminsedit: boolean;
+
+  @Field()
+  adminsdelete: boolean;
 
   @Field()
   rolename: string;

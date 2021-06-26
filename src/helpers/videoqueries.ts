@@ -140,7 +140,7 @@ export async function addVideos(
 }
 
 
-  export async function removeVideos(
+export async function removeVideos(
     vid: number,
     adminid: number,
     prisma: PrismaClient<
@@ -177,4 +177,51 @@ export async function addVideos(
     resp.videos = videos.videos
 
     return resp;
+}
+
+export async function updateVideos(
+  vid: number,
+  adminid: number,
+  content: string,
+  prisma: PrismaClient<
+    Prisma.PrismaClientOptions,
+    never,
+    Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+  >
+): Promise<VideoResponse> {
+  let resp: VideoResponse = {
+    videos: null,
+    token: null,
+    errors: null,
+  };
+
+  const videos = await prisma.admin.update({
+      where: {
+          id: adminid
+      },
+      data: {
+          videos: {
+              update: {
+                where: {
+                  id: vid,
+                },
+                data: {
+                  content: content,
+                },
+              },
+          },
+      },
+
+      select: {
+          videos: {
+            where: {
+              id: vid,
+            },
+          },
+      },
+  });
+
+  resp.videos = videos.videos
+
+  return resp;
 }

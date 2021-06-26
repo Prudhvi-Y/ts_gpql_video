@@ -12,7 +12,4 @@ export class User {
   name: string;
 
   password: string;
-
-  @Field()
-  role: string;
 }
