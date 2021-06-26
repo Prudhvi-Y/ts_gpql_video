@@ -10,9 +10,74 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-   id    Int     @id @default(autoincrement())
-   email String  @unique
-   name  String
-   password String
+model admin {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String   @unique
+  password String
+  videos   videos[]
+  role     String
+}
+
+model user {
+  id       Int        @id @default(autoincrement())
+  email    String     @unique
+  name     String     @unique
+  password String
+  comments comments[]
+}
+
+model videos {
+  id        Int        @id @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  content   String
+  author    admin?     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  comments  comments[]
+}
+
+model comments {
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  content      String
+  author       user?      @relation(fields: [authorName], references: [name])
+  authorName   String
+  video        videos?    @relation(fields: [videoId], references: [id])
+  videoId      Int
+  preCommentId Int?
+  preComments  comments?  @relation("CommentsSelf", fields: [preCommentId], references: [id])
+  succComments comments[] @relation("CommentsSelf")
+}
+
+model validusers {
+  id    Int    @id @default(autoincrement())
+  email String @unique
+}
+
+model roles {
+  id             Int     @id @default(autoincrement())
+  commentsadd    Boolean
+  commentsview   Boolean
+  commentsedit   Boolean
+  commentsdelete Boolean
+  rolesadd       Boolean
+  rolesview      Boolean
+  rolesedit      Boolean
+  rolesdelete    Boolean
+  videosadd      Boolean
+  videosview     Boolean
+  videosedit     Boolean
+  videosdelete   Boolean
+  usersadd       Boolean
+  usersview      Boolean
+  usersedit      Boolean
+  usersdelete    Boolean
+  isadmin        Boolean
+  adminsadd      Boolean
+  adminsview     Boolean
+  adminsedit     Boolean
+  adminsdelete   Boolean
+  rolename       String  @unique
 }
