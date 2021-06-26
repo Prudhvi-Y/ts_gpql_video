@@ -168,6 +168,46 @@ export async function getVideoComments(
   }
 }
 
+export async function updateComments(
+  user: User,
+  commentid: number,
+  content: string,
+  prisma: PrismaClient<
+    Prisma.PrismaClientOptions,
+    never,
+    Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+  >
+):Promise< comments[] | null> {
+
+  const comment = await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      comments: {
+        update: {
+          where: {
+            id: commentid,
+          },
+          data: {
+            content: content,
+          },
+        },
+      },
+    },
+
+    select: {
+      comments: {
+        where: {
+          id: commentid,
+        },
+      },
+    },
+  });
+
+  return comment.comments;
+}
+
 export async function deleteComments(
   user: User,
   commentid: number,

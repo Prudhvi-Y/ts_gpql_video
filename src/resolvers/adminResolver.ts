@@ -13,8 +13,9 @@ import { VideoResponse } from "../responses/videos";
 import { getAdmin } from "../helpers/jwtUtil";
 import { addVideos, getallVideos, getVideo, removeVideos, updateVideos } from "../helpers/videoqueries";
 import { addValidUser, removeValidUser, viewValidUser } from "../helpers/userqueries";
-import { deleteComments } from "../helpers/commentsqueries";
+import { deleteComments, updateComments } from "../helpers/commentsqueries";
 import { User } from "../interfaces/users";
+import { CommentResponse } from "../responses/comments";
 
 @Resolver()
 export class AdminResolver {
@@ -382,7 +383,66 @@ export class AdminResolver {
     }
   }
 
-  @Mutation(() => ValidUserResponse)
+  @Mutation(() => CommentResponse)
+  async adminUpdateComments(
+    @Arg("name") name: string,
+    @Arg("commentid") commentid: string,
+    @Arg("content") content: string,
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<CommentResponse | null> {
+    let resp: CommentResponse = {
+      comments: null,
+      token: null,
+      errors: null,
+    };
+
+    let err: FieldError = {
+      field: "",
+      message: "",
+    };
+    
+    const admin = getAdmin(req);
+
+    if (admin) {
+      const rolename = admin.role;
+
+      const role = await prisma.roles.findUnique({
+        where: {
+          rolename: rolename,
+        },
+      });
+
+      if (role?.commentsedit) {
+        const user = await prisma.user.findUnique({
+          where: {
+            name: name,
+          },
+        });
+        const cmnts = await updateComments(user as User, parseInt(commentid), content, prisma);
+        if (cmnts) {
+          resp.comments = cmnts;
+        } else {
+          err.field = "comment";
+          err.message = "not able to update comment";
+
+          resp.errors = [err];
+        }
+      }
+      err.field = "admin role";
+      err.message = "admin doesn't have permissions to delete valid users";
+
+      resp.errors = [err]
+      return resp;
+    } else {
+      err.field = "admin";
+      err.message = "token invalid login again";
+
+      resp.errors = [err]
+      return resp;
+    }
+  }
+
+  @Mutation(() => FieldError)
   async adminRemoveComments(
     @Arg("name") name: string,
     @Arg("commentid") commentid: string,

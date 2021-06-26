@@ -19,6 +19,7 @@ import {
   deleteComments,
   getCommentComments,
   getVideoComments,
+  updateComments,
 } from "../helpers/commentsqueries";
 import { comments } from "../interfaces/comments";
 
@@ -168,33 +169,15 @@ export class CommentResolver {
       });
 
       if (comment?.authorName == user.name) {
-        const comment = await prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            comments: {
-              update: {
-                where: {
-                  id: commentid,
-                },
-                data: {
-                  content: content,
-                },
-              },
-            },
-          },
+        const cmnts = await updateComments(user, commentid, content, prisma);
+        if (cmnts) {
+          resp.comments = cmnts;
+        } else {
+          err.field = "comment";
+          err.message = "not able to update comment"
 
-          select: {
-            comments: {
-              where: {
-                id: commentid,
-              },
-            },
-          },
-        });
-
-        resp.comments = comment.comments;
+          resp.errors = [err];
+        }
       } else {
         err.field = "comment";
         err.message = "this comment doesn't belong to the current user";
