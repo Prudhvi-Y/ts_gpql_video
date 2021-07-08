@@ -84,7 +84,7 @@ export class RoleResolver {
             field: "",
             message: "",
         };
-        const admin = getAdmin(req);
+        const admin = await getAdmin(req, prisma);
 
         if (admin) {
             const rolename = admin.role;
@@ -161,7 +161,7 @@ export class RoleResolver {
             field: "",
             message: "",
         };
-        const admin = getAdmin(req);
+        const admin = await getAdmin(req, prisma);
 
         if (admin) {
             const rolename = admin.role;
@@ -241,7 +241,7 @@ export class RoleResolver {
             field: "",
             message: "",
         };
-        const admin = getAdmin(req);
+        const admin = await getAdmin(req, prisma);
 
         if (admin) {
             const rolename = admin.role;
@@ -297,7 +297,7 @@ export class RoleResolver {
             field: "",
             message: "",
         };
-        const admin = getAdmin(req);
+        const admin = await getAdmin(req, prisma);
 
         if (admin) {
             const rolename = admin.role;

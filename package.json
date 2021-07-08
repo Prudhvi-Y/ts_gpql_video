@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/Prudhvi-Y/ts_gpql_video#readme",
   "devDependencies": {
-    "@prisma/client": "^2.24.1",
+    "@prisma/client": "^2.26.0",
     "@types/bcrypt": "^5.0.0",
     "@types/dotenv": "^8.2.0",
     "@types/graphql": "^14.5.0",
@@ -37,7 +37,7 @@
     "graphql": "^15.5.0",
     "graphql-scalars": "^1.9.3",
     "jsonwebtoken": "^8.5.1",
-    "prisma": "^2.24.1",
+    "prisma": "^2.26.0",
     "reflect-metadata": "^0.1.13",
     "ts-node": "^10.0.0",
     "tsc-node": "^0.0.3",

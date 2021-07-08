@@ -4,6 +4,7 @@ import { MyContext } from "../types";
 import jwt, { Secret } from "jsonwebtoken";
 import * as brcypt from "bcrypt";
 import { User } from "../interfaces/users";
+import { getUser, getToken } from "../helpers/jwtUtil";
 
 @InputType()
 export class UsernamePasswordInput {
@@ -125,11 +126,29 @@ export class UserResolver {
           expiresIn: "1h",
         });
 
-        return {
-          users: [user],
-          token: token,
-          errors: [fielderr],
-        };
+        const valid_login = await prisma.validlogin.upsert({
+          where: {
+            id: token
+          },
+          update: {
+            valid: true
+          },
+          create: {
+            id: token,
+            valid: true
+          },
+        });
+
+        if (!valid_login) {
+          fielderr.field = "jwt";
+          fielderr.message = "cannot add jwt token to database";
+        } else {
+          return {
+            users: [user],
+            token: token,
+            errors: [fielderr],
+          };
+        }
       }
     } else if (userInputs.password == null) {
       fielderr.field = "password";
@@ -137,6 +156,49 @@ export class UserResolver {
     } else {
       fielderr.field = "database";
       fielderr.message = "user not found in the database";
+    }
+
+    return {
+      users: null,
+      token: null,
+      errors: [fielderr],
+    };
+  }
+
+  @Mutation(() => UserResponse)
+  async userLogout(
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<UserResponse | null> {
+    const fielderr: FieldError = {
+      field: "",
+      message: "",
+    };
+
+    const user = await getUser(req, prisma);
+
+    if (user) {
+      const token = getToken(req);
+      if (token) {
+        const logout = await prisma.validlogin.update({
+          where: {
+            id: token
+          },
+          data: {
+            valid: false
+          },
+        });
+        if (!logout) {
+          fielderr.field = "jwt";
+          fielderr.message = "not able to invalidate jwt token";
+        }
+      } else {
+        fielderr.field = "jwt";
+        fielderr.message = "token not given";
+      }
+
+    } else {
+      fielderr.field = "user";
+      fielderr.message = "invalid user";
     }
 
     return {

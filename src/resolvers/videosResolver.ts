@@ -18,7 +18,7 @@ export class VideoResolver {
     @Arg("viewVideoInput") videoInputs: viewVideoInput,
     @Ctx() { req, prisma }: MyContext
   ): Promise<VideoResponse | null> {
-    const user = getUser(req);
+    const user = await getUser(req, prisma);
     let resp: VideoResponse = {
       videos: null,
       token: null,

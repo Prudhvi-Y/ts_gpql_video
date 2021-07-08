@@ -10,7 +10,7 @@ import * as brcypt from "bcrypt";
 import { UsernamePasswordInput } from "./userResolver";
 import { admin } from "../interfaces/admin";
 import { VideoResponse } from "../responses/videos";
-import { getAdmin } from "../helpers/jwtUtil";
+import { getAdmin, getToken } from "../helpers/jwtUtil";
 import { addVideos, getallVideos, getVideo, removeVideos, updateVideos } from "../helpers/videoqueries";
 import { addValidUser, removeValidUser, viewValidUser } from "../helpers/userqueries";
 import { deleteComments, updateComments } from "../helpers/commentsqueries";
@@ -30,7 +30,7 @@ export class AdminResolver {
       message: "",
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin && admin.role == process.env.SUPERADMIN_ROLE as string) {
 
@@ -140,11 +140,29 @@ export class AdminResolver {
           expiresIn: "1h",
         });
 
-        return {
-          users: [user],
-          token: token,
-          errors: [fielderr],
-        };
+        const valid_login = await prisma.validlogin.upsert({
+          where: {
+            id: token
+          },
+          update: {
+            valid: true
+          },
+          create: {
+            id: token,
+            valid: true
+          },
+        });
+
+        if (!valid_login) {
+          fielderr.field = "jwt";
+          fielderr.message = "cannot add jwt token to database";
+        } else {
+          return {
+            users: [user],
+            token: token,
+            errors: [fielderr],
+          };
+        }
       }
     } else if (userInputs.password == null) {
       fielderr.field = "password";
@@ -176,7 +194,7 @@ export class AdminResolver {
       errors: null,
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -233,7 +251,7 @@ export class AdminResolver {
       errors: null,
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -290,7 +308,7 @@ export class AdminResolver {
       errors: null,
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -346,7 +364,7 @@ export class AdminResolver {
       errors: null,
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -401,7 +419,7 @@ export class AdminResolver {
       message: "",
     };
     
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -453,7 +471,7 @@ export class AdminResolver {
       message: "",
     };
     
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -514,7 +532,7 @@ export class AdminResolver {
       errors: null,
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -568,7 +586,7 @@ export class AdminResolver {
       errors: null,
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -619,7 +637,7 @@ export class AdminResolver {
       errors: null,
     };
 
-    const admin = getAdmin(req);
+    const admin = await getAdmin(req, prisma);
 
     if (admin) {
       const rolename = admin.role;
@@ -654,5 +672,48 @@ export class AdminResolver {
 
       return resp;
     }
+  }
+
+  @Mutation(() => AdminResponse)
+  async adminLogout(
+    @Ctx() { req, prisma }: MyContext
+  ): Promise<AdminResponse | null> {
+    const fielderr: FieldError = {
+      field: "",
+      message: "",
+    };
+
+    const admin = await getAdmin(req, prisma);
+
+    if (admin) {
+      const token = getToken(req);
+      if (token) {
+        const logout = await prisma.validlogin.update({
+          where: {
+            id: token
+          },
+          data: {
+            valid: false
+          },
+        });
+        if (!logout) {
+          fielderr.field = "jwt";
+          fielderr.message = "not able to invalidate jwt token";
+        }
+      } else {
+        fielderr.field = "jwt";
+        fielderr.message = "token not given";
+      }
+
+    } else {
+      fielderr.field = "admin";
+      fielderr.message = "invalid admin";
+    }
+
+    return {
+      users: null,
+      token: null,
+      errors: [fielderr],
+    };
   }
 }

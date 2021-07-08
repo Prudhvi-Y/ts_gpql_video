@@ -81,3 +81,8 @@ model roles {
   adminsdelete   Boolean
   rolename       String  @unique
 }
+
+model validlogin {
+  id    String  @id
+  valid Boolean
+}

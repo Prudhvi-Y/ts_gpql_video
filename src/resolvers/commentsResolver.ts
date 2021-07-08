@@ -45,7 +45,7 @@ export class CommentResolver {
     @Ctx() { req, prisma }: MyContext,
     @PubSub() pubsub: PubSubEngine
   ): Promise<CommentResponse | null> {
-    const user = getUser(req);
+    const user = await getUser(req, prisma);
     let resp: CommentResponse = {
       comments: null,
       token: null,
@@ -85,7 +85,7 @@ export class CommentResolver {
     @Arg("commentId") commentid: number,
     @Ctx() { req, prisma }: MyContext
   ): Promise<CommentResponse | null> {
-    const user = getUser(req);
+    const user = await getUser(req, prisma);
     let resp: CommentResponse = {
       comments: null,
       token: null,
@@ -116,7 +116,7 @@ export class CommentResolver {
   async userDeleteAllComments(
     @Ctx() { req, prisma }: MyContext
   ): Promise<CommentResponse | null> {
-    const user = getUser(req);
+    const user = await getUser(req, prisma);
     let resp: CommentResponse = {
       comments: null,
       token: null,
@@ -149,7 +149,7 @@ export class CommentResolver {
     @Arg("content") content: string,
     @Ctx() { req, prisma }: MyContext
   ): Promise<CommentResponse | null> {
-    const user = getUser(req);
+    const user = await getUser(req, prisma);
     let resp: CommentResponse = {
       comments: null,
       token: null,
@@ -199,7 +199,7 @@ export class CommentResolver {
     @Arg("videoid") vid: number,
     @Ctx() { req, prisma }: MyContext
   ): Promise<CommentResponse | null> {
-    const user = getUser(req);
+    const user = await getUser(req, prisma);
     let resp: CommentResponse = {
       comments: null,
       token: null,
@@ -231,7 +231,7 @@ export class CommentResolver {
     @Arg("commentId") cid: number,
     @Ctx() { req, prisma }: MyContext
   ): Promise<CommentResponse | null> {
-    const user = getUser(req);
+    const user = await getUser(req, prisma);
     let resp: CommentResponse = {
       comments: null,
       token: null,
