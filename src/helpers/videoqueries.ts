@@ -16,12 +16,31 @@ export async function getallVideos(
     token: null,
     errors: null,
   };
+  let validuser;
 
-  const validuser = await prisma.validusers.findFirst({
+  validuser = await prisma.validusers.findFirst({
     where: {
       email: email,
     },
   });
+  if (!validuser) {
+    validuser = await prisma.admin.findFirst({
+      where: {
+        email: email
+      },
+    });
+    if (validuser) {
+      const roles = await prisma.roles.findFirst({
+        where: {
+          rolename: validuser.role
+        },
+      });
+
+      if(!roles || !roles.videosview){
+        validuser = null;
+      }
+    }
+  }
 
   if (validuser) {
     const uservideos = await prisma.videos.findMany();
@@ -57,12 +76,32 @@ export async function getVideo(
     token: null,
     errors: null,
   };
+  let validuser;
 
-  const validuser = await prisma.validusers.findFirst({
+  validuser = await prisma.validusers.findFirst({
     where: {
       email: email,
     },
   });
+
+  if (!validuser) {
+    validuser = await prisma.admin.findFirst({
+      where: {
+        email: email
+      },
+    });
+    if (validuser) {
+      const roles = await prisma.roles.findFirst({
+        where: {
+          rolename: validuser.role
+        },
+      });
+
+      if(!roles || !roles.videosview){
+        validuser = null;
+      }
+    }
+  }
 
   if (validuser) {
     const vid = parseInt(videoId);

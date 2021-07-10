@@ -83,6 +83,6 @@ model roles {
 }
 
 model validlogin {
-  id    String  @id
-  valid Boolean
+  email String @id
+  token String @unique
 }

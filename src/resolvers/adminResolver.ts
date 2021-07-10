@@ -61,12 +61,9 @@ export class AdminResolver {
         });
 
         if (user) {
-          const token = jwt.sign(user, process.env.APP_SECRET as Secret, {
-            expiresIn: "1h",
-          });
           return {
             users: [user],
-            token: token,
+            token: null,
             errors: [fielderr],
           };
         } else {
@@ -139,18 +136,17 @@ export class AdminResolver {
         const token = jwt.sign(user, process.env.APP_SECRET as Secret, {
           expiresIn: "1h",
         });
-
         const valid_login = await prisma.validlogin.upsert({
           where: {
-            id: token
+            email: user.email
           },
           update: {
-            valid: true
+            token: token
           },
           create: {
-            id: token,
-            valid: true
-          },
+            email: user.email,
+            token: token
+          }
         });
 
         if (!valid_login) {
@@ -688,12 +684,9 @@ export class AdminResolver {
     if (admin) {
       const token = getToken(req);
       if (token) {
-        const logout = await prisma.validlogin.update({
+        const logout = await prisma.validlogin.delete({
           where: {
-            id: token
-          },
-          data: {
-            valid: false
+            token: token
           },
         });
         if (!logout) {

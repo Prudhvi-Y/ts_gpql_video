@@ -23,10 +23,10 @@ export async function getUser(
 
     const valid = await prisma.validlogin.findFirst({
       where: {
-        id: token
+        token: token
       },
     });
-    if (!valid || !valid.valid) {
+    if (!valid) {
       return null;
     }
 
@@ -62,10 +62,10 @@ export async function getAdmin(
 
     const valid = await prisma.validlogin.findFirst({
       where: {
-        id: token
+        token: token
       },
     });
-    if (!valid || !valid.valid) {
+    if (!valid) {
       return null;
     }
 
